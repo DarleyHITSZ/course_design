@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<SimMechanicsImportXML version="1.0" xmlns="urn:mathworks:simmechanics:import" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Created by="" on="02/20/17||17:14:29" using="SimMechanics Link Version 4.5" from="SolidWorks 21.5.0"/>
+<ModelUnits mass="kilogram" length="millimeter"/>
+<DataUnits mass="kilogram" length="meter"/>
+<RootAssembly name="HL-0905" uid="HL-0905" version="189">
+<AssemblyFile name="HL-0905.SLDASM" type="SolidWorks Assembly"/>
+<InstanceTree>
+<Instance name="J0-1" uid="J0-1" entityUid="J0*:*默认">
+<Transform>
+<Rotation>-1 1.1102230246258128e-016 0 0 0 1 4.4408920985032511e-016 1 0</Rotation>
+<Translation>0 0 0</Translation>
+</Transform>
+</Instance>
+<Instance name="J1-1" uid="J1-1" entityUid="J1*:*默认">
+<Transform>
+<Rotation>1.2316536679435328e-016 1 1.587031682338629e-016 -1 1.2316536679435256e-016 4.4782358595418966e-015 4.4782358595418966e-015 -1.5870316823386344e-016 1</Rotation>
+<Translation>-0.00046986063114484847 2.239233592393027e-015 0.19113023859584358</Translation>
+</Transform>
+</Instance>
+<Instance name="J2-1" uid="J2-1" entityUid="J2*:*默认">
+<Transform>
+<Rotation>1 1.2316536679435327e-014 0 0 2.8064657580326916e-016 -1 -1.2316536679435327e-014 1 2.8064657580326842e-016</Rotation>
+<Translation>8.7961440981189007e-015 1.5363180048295996e-015 0.64100000000001445</Translation>
+</Transform>
+</Instance>
+<Instance name="J3-1" uid="J3-1" entityUid="J3*:*默认">
+<Transform>
+<Rotation>-1 -3.1918911957973265e-016 1.5504910915007619e-016 1.5504910915010869e-016 1.6299313629591618e-016 1 -3.1918911957973236e-016 1 -1.6299313629437805e-016</Rotation>
+<Translation>0.080000000000019153 1.5346895851014284e-015 0.64100000000002799</Translation>
+</Transform>
+</Instance>
+<Instance name="J4-1" uid="J4-1" entityUid="J4*:*默认">
+<Transform>
+<Rotation>-3.6478325448163752e-016 -1 2.1670877925774863e-014 4.343747583845925e-015 -2.167087792577486e-014 -1.0000000000000002 1.0000000000000002 -3.6478325448163495e-016 4.343747583845925e-015</Rotation>
+<Translation>0.11000000000001355 6.3354074025557545e-015 0.64100000000002844</Translation>
+</Transform>
+</Instance>
+<Instance name="J5-1" uid="J5-1" entityUid="J5*:*默认">
+<Transform>
+<Rotation>5.3429483060085659e-016 -1 -1.3456697834508993e-015 -3.69506979697715e-015 1.3456697834509001e-015 -1 1 5.3429483060085659e-016 -3.6950697969771343e-015</Rotation>
+<Translation>0.45000000000001911 1.1229170411298417e-015 0.64100000000002844</Translation>
+</Transform>
+</Instance>
+<Instance name="J6-1" uid="J6-1" entityUid="J6*:*默认">
+<Transform>
+<Rotation>6.2320338355257457e-016 -1 -1.4178125378558991e-015 3.8857805861880471e-015 -1.4178125378558976e-015 1 -1 -6.2320338355258069e-016 3.8857805861880487e-015</Rotation>
+<Translation>0.450000000000019 3.8090785352741251e-014 0.64100000000002866</Translation>
+</Transform>
+</Instance>
+</InstanceTree>
+<Constraints>
+<Coincident name="重合3">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J0-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>3.3306690738774383e-016 1 0</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>HL-0905</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合8">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J0-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>HL-0905</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 1 0</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合9">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J0-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>1 3.3306690738774383e-016 0</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>HL-0905</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>1 0 0</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合10">
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J0-1</Uid>
+</InstancePath>
+<Position>-1.1006414838582222e-016 -0.33045657177129795 1.4155343563970754e-015</Position>
+<Axis>3.3306690738774383e-016 1 0</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J1-1</Uid>
+</InstancePath>
+<Position>0 0.00046986063114488668 -0.29614857827702856</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Distance name="距离1">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J0-1</Uid>
+</InstancePath>
+<Position>0 -2.6291469001904489e-016 1.4155343563970734e-015</Position>
+<Axis>3.3306690738774383e-016 1 4.7184478546569129e-015</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J1-1</Uid>
+</InstancePath>
+<Position>-0.10849999999999996 0.00046986063114420906 -0.19013023859584385</Position>
+<Axis>0 0 -1</Axis>
+</ConstraintGeometry>
+</Distance>
+<Coincident name="重合12">
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J1-1</Uid>
+</InstancePath>
+<Position>-0.15750186515424092 0.00046986063114702603 -0.00013023859582908526</Position>
+<Axis>1 2.1482815526496785e-014 0</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J2-1</Uid>
+</InstancePath>
+<Position>0 -0.44999999999999996 -0.14110180499396582</Position>
+<Axis>0 -1.4033578804862823e-016 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合13">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J1-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>1 0 0</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J2-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合15">
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J2-1</Uid>
+</InstancePath>
+<Position>0 0 -0.24910747383836634</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J3-1</Uid>
+</InstancePath>
+<Position>0.080000000000002652 -1.3655743202889425e-014 -0.11788272732539716</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合16">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J2-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J3-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合18">
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J3-1</Uid>
+</InstancePath>
+<Position>-0.061209572476958324 1.1102230246251565e-016 0</Position>
+<Axis>1 1.5038850877521563e-016 -1.5504910915009843e-016</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J4-1</Uid>
+</InstancePath>
+<Position>0 0.11858199718516153 0</Position>
+<Axis>0 -1 0</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Distance name="距离2">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J3-1</Uid>
+</InstancePath>
+<Position>0 -0.049999999999999933 0</Position>
+<Axis>-1 1.1383282212626435e-015 0</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J4-1</Uid>
+</InstancePath>
+<Position>0 0.028999999999999998 0</Position>
+<Axis>0 1 0</Axis>
+</ConstraintGeometry>
+</Distance>
+<Coincident name="重合21">
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J4-1</Uid>
+</InstancePath>
+<Position>1.1102230246251565e-016 -0.33999999999999997 -0.077256482127756515</Position>
+<Axis>0 0 1.0000000000000002</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J5-1</Uid>
+</InstancePath>
+<Position>3.3306690738754696e-016 -1.1102230246251565e-016 0.074403304753910299</Position>
+<Axis>-3.6222097452906047e-015 1.2341651395587414e-015 -1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合22">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J4-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1.0000000000000002</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J5-1</Uid>
+</InstancePath>
+<Position>0 0 0</Position>
+<Axis>0 0 1</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Coincident name="重合24">
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J5-1</Uid>
+</InstancePath>
+<Position>0 0.067194984090474252 0</Position>
+<Axis>5.3251795651102145e-016 -1 -1.3456697834508962e-015</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="line">
+<InstancePath>
+<Uid>J6-1</Uid>
+</InstancePath>
+<Position>1.1102230246251565e-016 -0.089128757040651596 -1.2091550163674086e-016</Position>
+<Axis>-5.204170427932918e-016 1 1.3540619933324484e-015</Axis>
+</ConstraintGeometry>
+</Coincident>
+<Distance name="距离3">
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J5-1</Uid>
+</InstancePath>
+<Position>-0.023469288442558578 -0.072499999999999953 0.013549999999999189</Position>
+<Axis>5.3251795651102145e-016 -1 -1.3456697834508962e-015</Axis>
+</ConstraintGeometry>
+<ConstraintGeometry geomType="plane">
+<InstancePath>
+<Uid>J6-1</Uid>
+</InstancePath>
+<Position>1.1102230246251565e-016 -0.073000000000000065 0</Position>
+<Axis>-5.5793091787400804e-016 1 1.3761987631419494e-015</Axis>
+</ConstraintGeometry>
+</Distance>
+</Constraints>
+</RootAssembly>
+<Assemblies>
+</Assemblies>
+<Parts>
+<Part name="J0" uid="J0*:*默认" version="812">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J0.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>7.6540594351842266</Mass>
+<CenterOfMass>0.022860239072093148 -0.14721867176219042 -0.0012431125209809186</CenterOfMass>
+<Inertia>0.13069470688402399 0.12350999199142594 0.13353569433842544 -0.0015776165993481046 0.0011909909643824091 0.0058237333434025844</Inertia>
+</MassProperties>
+<GeometryFile name="J0_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+<Part name="J1" uid="J1*:*默认" version="211">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J1.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>10.630000000000001</Mass>
+<CenterOfMass>0.038979999999999994 0.00564 -0.086999999999999994</CenterOfMass>
+<Inertia>0.058730529999999996 0.075050640000000002 0.055241569999999997 -0.00052818999999999989 -0.010070209999999989 -0.00085315999999999994</Inertia>
+</MassProperties>
+<GeometryFile name="J1_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+<Part name="J2" uid="J2*:*默认" version="434">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J2.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>13.369999999999999</Mass>
+<CenterOfMass>-0.0093499999999999989 -0.29032999999999998 0.01324</CenterOfMass>
+<Inertia>0.30553419999999987 0.054660519999999997 0.29400964000000002 0.0053540299999999975 -0.00096877999999999992 0.0054588599999999994</Inertia>
+</MassProperties>
+<GeometryFile name="J2_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+<Part name="J3" uid="J3*:*默认" version="334">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J3.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>5.2930000000000001</Mass>
+<CenterOfMass>0.082348000000000005 -0.0067000000000000002 -0.016399999999999998</CenterOfMass>
+<Inertia>0.009712763000000001 0.014300983 0.015335695999999999 0.000137737 0.0010872009999999992 0.00029608499999999997</Inertia>
+</MassProperties>
+<GeometryFile name="J3_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+<Part name="J4" uid="J4*:*默认" version="437">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J4.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>5.6600000000000001</Mass>
+<CenterOfMass>-0.00027 -0.12773999999999999 0.0022400000000000002</CenterOfMass>
+<Inertia>0.057312889999999998 0.0091912999999999995 0.057306719999999998 0.0016801400000000001 -5.5199999999999997e-006 9.5799999999999998e-005</Inertia>
+</MassProperties>
+<GeometryFile name="J4_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+<Part name="J5" uid="J5*:*默认" version="335">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J5.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>1.52</Mass>
+<CenterOfMass>1.0000000000000001e-005 -0.023710000000000002 -0.00063000000000000003</CenterOfMass>
+<Inertia>0.0023209099999999998 0.0012813900000000001 0.0021775700000000002 3.8149999999999999e-005 -4.9999999999999965e-008 1.3e-007</Inertia>
+</MassProperties>
+<GeometryFile name="J5_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+<Part name="J6" uid="J6*:*默认" version="169">
+<ModelUnits mass="kilogram" length="millimeter"/>
+<PartFile name="J6.SLDPRT" type="SolidWorks Part"/>
+<MassProperties>
+<Mass>0.20999999999999999</Mass>
+<CenterOfMass>-2.9999999999999997e-005 -0.070999999999999994 2.9999999999999997e-005</CenterOfMass>
+<Inertia>2.898e-005 3.3939999999999997e-005 2.8989999999999999e-005 4.9999999999999965e-008 1.9999999999999986e-007 -5.9999999999999995e-008</Inertia>
+</MassProperties>
+<GeometryFile name="J6_默认_sldprt.STL" type="STL"/>
+<VisualProperties>
+<Ambient r="1" g="1" b="1" a="1"/>
+<Diffuse r="1" g="1" b="1" a="1"/>
+<Specular r="0.88" g="0.88" b="0.88" a="1"/>
+<Emissive r="0.20999999999999999" g="0.20999999999999999" b="0.20999999999999999" a="1"/>
+<Shininess>0.20999999999999999</Shininess>
+</VisualProperties>
+</Part>
+</Parts>
+</SimMechanicsImportXML>

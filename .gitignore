@@ -1,0 +1,19 @@
+# --- 生成物（run_design 产物；保留点位文件、预览与轨迹图以便直接交付） ---
+output/*.mat
+!output/probes.mat
+output/*.csv
+output/*.log
+output/*.slx
+output/run_full.log
+
+# --- 临时诊断脚本（勿入库） ---
+tmp_*.m
+
+# --- Simulink / Simscape 缓存 ---
+slprj/
+*.slxc
+*.asv
+*.autosave
+
+# --- 大体积网格：1.5 GB，单独分发（从实验四 Matlab/HL-0905 复制） ---
+Matlab/HL-0905/*.STL

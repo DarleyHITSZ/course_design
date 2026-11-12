@@ -1,0 +1,70 @@
+{
+  "chars": "工大",
+  "generated_at": "2026-11-12 17:57:28",
+  "points": 32341,
+  "duration_s": 32.34,
+  "paper_mm": [
+    580,
+    0,
+    520
+  ],
+  "brush": {
+    "length_m": 0.12,
+    "radius_m": 0.004,
+    "max_press_m": 0.0015,
+    "tool_rotation": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        0,
+        0,
+        -1
+      ]
+    ]
+  },
+  "speeds_mm_s": {
+    "draw": 20,
+    "press": 12,
+    "move": 80
+  },
+  "plan": {
+    "tip_range_x_m": [
+      0.49999999999999994,
+      0.66199999999999992
+    ],
+    "tip_range_y_m": [
+      -0.028,
+      0.028
+    ],
+    "max_press_depth_mm": 1.3182556501830645,
+    "segments": 5
+  },
+  "metric": {
+    "points": 32341,
+    "duration_s": 32.34,
+    "max_position_error_mm": 3.8103396631917681E-12,
+    "rms_position_error_mm": 2.4208368474602411E-12,
+    "max_orientation_error_deg": 1.2308001726670451E-13,
+    "max_path_error_mm": 1.9948619013532711E-8,
+    "max_speed_deg_s": 14.555696241398737,
+    "max_acceleration_deg_s2": 121.65532741359895,
+    "max_press_depth_mm": 1.3182556501830645,
+    "max_speed_mm_s": 79.931754597313812
+  },
+  "files": {
+    "points": "writing_joint.txt",
+    "preview": "writing_preview.png",
+    "path": "writing_path.png",
+    "timeline": "writing_timeline.csv",
+    "tip_path": "writing_tip_path.csv",
+    "workspace": "model_workspace.mat"
+  }
+}
