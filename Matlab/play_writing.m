@@ -7,7 +7,7 @@ function play_writing(tag)
 % 与实验四码垛仿真一致：把已校验的关节轨迹注入 Simscape Multibody 模型，
 % 仿真时 Mechanics Explorer 显示真实连杆几何的运动。
 % 注意：Mechanics Explorer 只在 MATLAB 桌面里可见；-batch 下不会弹窗（但仿真照常）。
-% 仿真比实时快（约 5 s 跑完 32 s 轨迹），所以跑完后按 Mechanics Explorer 的 ▶
+% 仿真比实时快（约 5 s 跑完 36 s 轨迹），所以跑完后按 Mechanics Explorer 的 ▶
 % 可 1 倍速回放，或用时间轴拖拽、调速。
 if nargin<1||isempty(tag), tag='writing'; end
 cfg=NormalizeConfig(BrushConfig()); c=HL0905Config();

@@ -14,6 +14,8 @@
 - **平台**：Windows。路径与模型含中文（`docs/课设要求.pdf`、模型子系统 `六轴机器人`/`轨迹规划`/`输出结果`），
   脚本按 UTF-8 处理。
 - **体量**：`Matlab/HL-0905/` 约 1.5 GB（SLX + STL），`output/` 全是生成物。**不要提交 `output/`**。
+- **状态**：书写流程已上机实跑通过（2026-11-23，实拍 `output/实际书写结果.jpg`）。首行 = 末行 = 待机位形（纸面中心上方 30 mm），
+  可连续回放；控制器只接受**与现场位形一致**的首行。
 
 ## 2. 常用命令
 
@@ -42,19 +44,22 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
 
 跑 MATLAB 用 `-batch`，不要开 GUI；`run_design` 内部已把图窗设为不可见。
 
+上机前先把机器人 jog 到 `run_design` 打印的「待机起始位形」（= 点位文件首行），否则控制器拒绝加载轨迹。
+实跑基准（2026-11-23）：36163 点 / 36.16 s，首行 = 末行 = 待机位形。
+
 ## 3. 模块职责（改代码前先定位）
 
 | 文件 | 职责 | 改动风险 |
 | --- | --- | --- |
-| `Matlab/BrushConfig.m` | **纯参数表**：只有要填的数字（mm/deg/mm·s⁻¹），无逻辑无校验。上机只填 `flangeContact_mm` 与 `brushLength_mm` | 高：填错=撞纸/戳纸 |
-| `Matlab/NormalizeConfig.m` | 把 BrushConfig 的 mm/deg 换成 SI（m/rad/s），并由 `flangeContact_mm + L` 反推纸面位置、生成 `Rtool` | 中：改字段名要同步这里 |
+| `Matlab/BrushConfig.m` | **纯参数表**：只有要填的数字（mm/deg/mm·s⁻¹），无逻辑无校验。上机只填 `qTouch_deg`（触纸六关节角）与 `brushLength_mm`；调手感用 `standby_mm`/`pressOffset_mm` | 高：填错=撞纸/戳纸 |
+| `Matlab/NormalizeConfig.m` | 把 BrushConfig 的 mm/deg 换成 SI（m/rad/s）；纸面位置与 `Rtool` 由 `run_design` 用 `qTouch_deg` 的 FK 反推（`NormalizeConfig` 只做单位换算与兜底） | 中：改字段名要同步这里 |
 | `Matlab/CharLib.m` | 字形库：笔画几何（字格 uv）+ 宽度节点表 + 逐笔速度 | 中：只影响字形 |
-| `Matlab/BrushPlanner.m` | 笔画 → 笔尖轨迹；抬笔/空行程/落笔/绘制/提笔分段 + 提按深度 | 高：轨迹结构与速度都在这里 |
+| `Matlab/BrushPlanner.m` | 笔画 → 笔尖轨迹；抬笔/空行程/落笔/绘制/提笔 + **结尾回待机**分段，提按深度叠加 `pressOffset` | 高：轨迹结构与速度都在这里 |
 | `Matlab/WriteTrajectory.m` | 笔尖 → 关节：逐点 IK + 笔尖雅可比反解 `qd/qdd` | 高：IK 种子/雅可比错了会毁掉整条轨迹 |
 | `Matlab/render_writing.m` | 由深度渲染墨迹位图（预览用） | 低 |
 | `Matlab/plot_writing.m` | 墨迹预览 + 六联图（含关节速度/加速度）；`lightax` 强制白底黑字（本机是深色主题） | 低 |
 | `Matlab/play_writing.m` | 在 Mechanics Explorer 里用 HL-0905 实体模型回放轨迹 | 低：复用已校验轨迹 |
-| `Matlab/run_design.m` | 主流程 + 断言 + 导出 + 回写模型 InitFcn | 高：验收逻辑与产物格式 |
+| `Matlab/run_design.m` | 主流程 + 断言 + 导出 + 回写模型 InitFcn；开头由 `qTouch_deg` 反解 `Rtool`/纸面/待机起始位形 `q0` | 高：验收逻辑与产物格式 |
 | `Matlab/simulate_design.m` | 复跑轨迹、绘图 | 中 |
 | `Matlab/prepare_model.m` | 由原始模型生成 `output/HL0905_2_writing.slx`；第二参数 `visualize` 控制是否开 Mechanics Explorer；顺带把 7 个 `ExtGeomFileName` 改成绝对路径 | 中：中文块名 + `newline` 拼接，见 §5 |
 | `Matlab/HL0905Config.m` | `Xi`/`g0`/`qlim`，机器提取的数值，**不要手改** | 高：与模型几何强耦合 |
@@ -78,8 +83,8 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
    保证 `s(end)=1`。
 4. **时间对齐**：多轴只能共享一条归一化 `s(t)`，禁止各轴独立规划再缩放。
 5. **IK 连续性**：逐点 IK 必须以上一点解为种子（`seed = Ikine6s(Tf,c)`），禁止固定种子重解。
-6. **提按模型**：`d = w²/(8R)` 且 `d <= maxPress`；宽度曲线与深度必须由同一套参数推导，
-   不要单独硬编码 z 高度。
+6. **提按模型**：`d = w²/(8R)` 且 `d <= maxPress`，实际下压 `pressOffset + d`；宽度曲线与深度必须由同一套参数推导，
+   不要单独硬编码 z 高度。（注意：实机上墨宽由笔锋决定，见 §5 高估条目）
 7. **`qdd` 按时间求导**：`for j=1:6, qdd(:,j)=gradient(qd(:,j),Ts); end`。
    `gradient(qd,Ts)` 会沿关节维求差，产生上万 deg/s² 的假加速度（曾经踩过）。
 8. **采样段总长**：`BrushPlanner.samplePath` 用 `L = pc(end)`（累加值）而不是 `sum(...)`，
@@ -88,6 +93,10 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
    `|qdd| < qddMax`。放宽阈值前先确认不是 bug。
 10. **标定一致性**：POE 与模型探针最大偏差 < 1e-8（当前 8.55e-15）。改模型几何后必须重新提取
     `HL0905Config.m` 并重跑 `probe_model.m`。
+11. **首尾位形一致**：`writing_joint.txt` 首行 == 末行（都停在纸面中心正上方 `standby_mm`）。控制器按首行对齐现场位形，
+    改待机高度后必须把机器人 jog 到 `run_design` 打印的「待机起始位形」。
+12. **派生不自填**：`Rtool`、`paperX/Y/Z`、`q0` 只能由 `qTouch_deg` 的 FK 派生；禁止手填 `paperZ` 或另外猜 `q0_deg`，
+    否则纸面与实际不符（压不实/戳纸）或控制器报 joint distance too far。
 
 ## 5. 陷阱与故障排查
 
@@ -95,6 +104,11 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
 | --- | --- |
 | `IK did not converge` | 目标不可达/跨分支。检查 `flangeContact_mm`/`brushLength_mm`、`lift_mm`、字格偏移；先 `simulate=false` 定位失败点。 |
 | 打印的纸面中心与预期差一截 | 示教时读的是法兰还是笔尖搞混了：`flangeContact_mm` 必须是**法兰中心**；漏写 `NormalizeConfig` 时 `paperX/Y/Z` 不存在，会直接报字段错误。 |
+| 控制器报 `The joint distance of Current location and PPB start location are too far away` | 首行位形与现场差太多。`qTouch_deg` 填对后先看打印的「待机起始位形」，把机器人 jog 过去再回放（旧版首行 `[0 30 80 0 70 0]` 会差 J6 199°）。 |
+| 纸面坐标/轨迹整体乱掉、`paper` 变成 3×3 | `run_design` 里纸面反推写成了 `(1000*Tt(1:3,4)+L*Rtool(:,3)')'`，广播成矩阵。必须 `(1000*Tt(1:3,4))' + L*Rtool(:,3)'`。 |
+| IK 报 `Joint limit exceeded`（用触纸种子） | 还在用旧解析式 `Rtool`（`yaw=0`）。必须让 `Rtool` 取自 `qTouch_deg` 的 FK（实测笔杆偏竖直 0.92°）。 |
+| 纸上墨宽比 `writing_preview.png` 细很多 | 球头模型在深压段高估 3–4 倍：`pressOffset_mm=4` 时模型算 8.9–13 mm，实测只有 2.8–3.3 mm。预览只当上限，别靠加压加粗。 |
+| 起笔/收笔处有小墨点 | 落笔竖直段速度 12 mm/s 太慢、停顿积墨；`BrushPlanner` 落笔段提速到 18 或缩短落笔前停留。 |
 | `段采样出现非有限值` | `samplePath` 里 NaN（端点 ulp 问题），见 §4.8。 |
 | `关节加速度超限` | 常见原因是用 `gradient(qd,Ts)`（§4.7）；其次是真的太猛，降速度/加 `accDraw`。 |
 | 墨迹预览字形怪 | `CharLib` 笔画顺序/方向不对（应从起笔到收笔），或宽度节点表首尾没收窄。 |
@@ -119,15 +133,19 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
 
 **调书写质量**：
 
-- 粗细 → `CharLib` 宽度节点表 / `maxPress` / `brushRadius`（物理笔尖半径）
+- 粗细 → `CharLib` 宽度节点表（实机最有效）/ `maxPress` / `brushRadius`；加压深几乎不变宽，见 §5
+- 压深 → `pressOffset`（整体加/减 2–4 mm，调墨色浓淡）
+- 待机 → `standby_mm`（首尾停位高度，30 mm 左右；设 0 会在纸面中心收笔，留墨点）
 - 快慢 → 每笔 `speed`、`speedDraw`；越快越细、墨越淡
 - 抬笔高度 → `lift`（太小会拖墨，太大会增加空行程时间）
 - 字距排版 → `cell`、`cellGap`，以及 `BrushPlanner` 里的 `off`
 
 **改纸面/工位**（上机标定）：只改 `Matlab/BrushConfig.m` 的两个数——
-`flangeContact_mm`（笔尖接触纸面中心时的法兰中心坐标，示教器读数 mm）与 `brushLength_mm`（法兰到笔尖距离）。
-纸面位置由 `NormalizeConfig` 反推（`tip = flange + L*Rtool(:,3)`），不要再去手填 `paperZ`；
-`run_design` 会打印"法兰接触坐标 / => 纸面（笔尖）中心"两行供核对。
+`qTouch_deg`（笔尖刚触纸时的六个关节角，deg）与 `brushLength_mm`（法兰到笔尖距离）。
+`run_design` 用 `qTouch_deg` 的 FK 一次派生三样东西：书写姿态 `Rtool`、纸面中心 `paperX/Y/Z`、待机起始位形 `q0`
+（`paper = (1000*Tt(1:3,4))' + L*Rtool(:,3)'`，**转置必须在加法之前**），不要手填 `paperZ`，也不要另外猜 `q0_deg`；
+只有读不到关节角时才退回 `flangeContact_mm`。运行时会打印「示教触纸姿态 / 待机起始位形 / 法兰接触坐标 / => 纸面（笔尖）中心」四行，
+现场核对这四行即可，纸面高度差 1 mm 就会压不实或戳纸。
 
 **改导出格式**：先看控制器文档，再同时改 `run_design>export_points` 与 §4.1 的格式约定。
 
@@ -145,6 +163,8 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
 - [ ] `output/design_summary.json` 中三条误差仍在 1e-9 量级以内（不是"刚过阈值"）。
 - [ ] `output/writing_preview.png` 里能认出"工大"，笔画无断裂、无多余拖墨。
 - [ ] `output/writing_joint.txt` 行数 = `design_summary.json.points`，6 列，值在 `qlim` 内。
+- [ ] 首行 == 末行，且等于 `run_design` 打印的「待机起始位形」（上机前 jog 到那里）。
+- [ ] 上机实拍存 `output/实际书写结果.jpg`，并把尺寸/墨宽/异常写进 README §8「上机实测」。
 - [ ] 未手改 `output/` 下的生成物；诊断脚本命名带 `tmp_` 前缀并及时删除。
 - [ ] 清掉缓存与中间物：`slprj/`、`*.slxc`、`*.asv`、根目录残留的 `tmp_*`；`output/` 只留 §6 列出的文件。
 - [ ] README 中的参数表、命令、指标与代码一致（改接口时同步更新）。

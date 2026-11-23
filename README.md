@@ -9,6 +9,7 @@
 - 规划、验证、绘图全部在 MATLAB 中完成，**不依赖 Robotics Toolbox**（运动学沿用实验四的 POE 实现）
 - 现有字形：`工`、`大`（简单笔画）；扩展方法见 [§9](#9-扩展与已知限制)
 - 产物：`output/writing_joint.txt`（6 列关节角，deg）、墨迹预览、轨迹图、误差汇总
+- **已上机验证（2026-11-23）**：实写照片 [`output/实际书写结果.jpg`](output/实际书写结果.jpg)；起点/终点都停在纸面中心上方 30 mm，首尾位形一致，可连续回放
 
 ## 1. 快速开始
 
@@ -41,13 +42,13 @@ play_writing
 D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
 ```
 
-完整流程约 **2–4 分钟**：逐点 IK 约 90 s、Simscape 回代仿真 5–20 s，其余是 1.5 GB 模型加载与绘图。
+完整流程约 **2–4 分钟**：逐点 IK 约 30 s（3.6 万点）、Simscape 回代仿真约 5 s，其余是 1.5 GB 模型加载与绘图。
 
 ### 1.3 看结果
 
 | 文件 | 用途 |
 | --- | --- |
-| `output/writing_preview.png` | 墨迹预览（按深度渲染笔迹宽度），检查字形与粗细 |
+| `output/writing_preview.png` | 墨迹预览（按深度渲染笔迹宽度），检查字形与粗细。按球头模型渲染，是**粗细上限**；实际墨宽约 3 mm，见 §4.2 |
 | `output/writing_path.png` | 六联图：笔尖俯视/3D 轨迹、关节角、关节速度、关节加速度、提按与速度 |
 | `output/writing_joint.txt` | 上机点位文件：6 列关节角（deg），无表头 |
 | `output/design_summary.json` | 参数与仿真误差汇总 |
@@ -58,7 +59,7 @@ D:\MATLAB\R2026b\bin\matlab.exe -batch "addpath('Matlab'); run_design('工大')"
 course_design/
 ├── sim_writing.m              # 一键脚本（顶部 doPlay 控制跑完是否回放）
 ├── Matlab/
-│   ├── BrushConfig.m          # 纯参数表（法兰接触点/笔长/速度/字格/容差/初始位形）
+│   ├── BrushConfig.m          # 纯参数表（触纸关节角/笔长/待机高度/压深/速度/字格/容差）
 │   ├── NormalizeConfig.m      # mm/deg -> SI，并由法兰接触点反推纸面与 Rtool
 │   ├── CharLib.m              # 字形库：笔画几何 + 笔迹宽度曲线
 │   ├── BrushPlanner.m         # 笔画 -> 笔尖轨迹（抬笔/空行程/落笔/绘制/提笔 + 提按）
@@ -76,7 +77,7 @@ course_design/
 │   ├── TrajGena.m             # 归一化曲线 -> 关节 q/qd/qdd
 │   ├── probe_model.m          # 生成 output/probes.mat（标定探针）
 │   └── HL-0905/               # 原始 Simscape 模型 + STL（约 1.5 GB）
-├── output/                    # 全部生成物（勿手改）
+├── output/                    # 全部生成物（勿手改）；含上机实拍 实际书写结果.jpg
 └── docs/
     ├── requirements.md        # 课设要求摘要与映射
     ├── 课设要求.pdf            # 原始要求（9 页）
@@ -91,7 +92,8 @@ CharLib          字形 -> 笔画（字格系 uv + 宽度曲线 + 逐笔速度�
 BrushPlanner     笔画 -> 笔尖世界轨迹
    │ 抬笔(竖直) / 空行程(水平, 80 mm/s) / 落笔(竖直, 12 mm/s) / 绘制(逐笔速度)
    │ 每段用 MotionPlanning 做梯形规划，段首段尾速度为 0
-   │ 压入深度 d = w²/(8R) → 笔尖 z = paperZ - d
+   │ 压入深度 d = w²/(8R)，实际 z = paperZ - pressOffset - d
+   │ 末尾追加"回待机"段（笔尖回到纸面中心上方 standby）
    ▼
 WriteTrajectory  笔尖轨迹 -> 关节轨迹
    │ IK 目标：法兰位姿 Tf = [Rtool, tip - L*Rz]；逐点以上一点为种子
@@ -109,18 +111,29 @@ sim(in)          Simscape Multibody 回代（ode15s, MaxStep 1 ms）
 
 ## 4. 关键实现
 
-### 4.1 末端位姿：笔是法兰坐标系的 -Z 方向
+### 4.1 末端位姿：书写姿态由触纸关节角实测确定
 
-法兰在初始位形 `q0 = [0 30 80 0 70 0]°` 处的姿态为 `diag(1,-1,-1)`，即法兰 +Z 朝下，正好适合
-"笔尖朝下"的书写姿态。工具坐标系取
+`qTouch_deg` 非空时（推荐），`run_design` 用 FK 取触纸位形的法兰姿态作为 `Rtool`：
 
 ```matlab
-Rtool = Rz(yaw) * diag([1 -1 -1]) * rotx(tilt)   % BrushConfig.m
+Tt   = Fkine(c.Xi, qTouch, c.g0);                                  % 触纸位形的法兰位姿
+cfg.Rtool   = Tt(1:3,1:3);                                         % 实测书写姿态
+cfg.paper_mm = (1000*Tt(1:3,4))' + cfg.brushLength_mm*cfg.Rtool(:,3)';   % 纸面 = 法兰 - L*笔轴
 ```
 
-- `yaw`：绕世界 Z 转笔杆（调整笔画方向感），默认 0
-- `tilt`：笔杆相对竖直的倾角，默认 0（垂直书写）；增大 tilt 需要改 `Rtool` 并重跑仿真
-- 笔尖在法兰系中固定为 `[0;0;L]`，`L = 220 mm`（2026-11-23 实测），因此 **IK 目标 = 笔尖位置 - L*Rz**
+当前实测姿态（笔杆偏离竖直 0.92°，中锋几乎垂直）：
+
+```text
+Rtool = [-0.9824  0.1863  0.0145
+          0.1862  0.9825 -0.0071
+         -0.0155 -0.0043 -0.9999]
+```
+
+- `Rtool(:,3) ≈ [0.014 -0.007 -1]`：笔尖在法兰的 -Z 方向、`L = 220 mm`（2026-11-23 实测），**IK 目标 = 笔尖位置 - L*Rz**
+- 姿态**全程固定**（不做腕部转动），整条轨迹只有一个 `Rtool`；用旧公式（`yaw=0`）从触纸种子做 IK 会直接 "Joint limit exceeded"
+- 纸面反推写成 `(1000*Tt(1:3,4) + L*Rtool(:,3)')'` 会广播成 3×3、纸面全乱——**转置必须在加法之前**
+- 只有 `qTouch_deg = []` 时才退回解析式 `Rtool = Rz(yaw)*diag([1 -1 -1])*rotx(tilt)`（`yaw`/`tilt` 字段），
+  它假设法兰初始姿态恰为 `diag(1,-1,-1)`，与实机示教读数不符，仅供演示/回归
 
 ### 4.2 提按：深度与宽度的物理关系
 
@@ -134,6 +147,11 @@ d = w^2 / (8 R)        % BrushPlanner.m，深度上限 maxPress = 1.5 mm
 宽度最大 6.5 mm（撇）对应深度约 1.32 mm（上限 1.5 mm）；收笔处宽度收到 20–30 %，深度降到 ~0.1 mm，
 于是"提笔"即抬 z。
 这套模型让 `CharLib` 里的宽度曲线（起笔收窄、行笔饱满、收笔出锋）直接变成可见的粗细变化。
+
+**实测修正（2026-11-23 上机）**：`pressOffset_mm=4` 时模型算出的接触宽 8.9–13 mm，纸面实际墨宽只有
+竖笔 2.8 mm / 横笔 3.3 mm（按照片墨迹包围盒 162×56 mm 标定 ≈18 px/mm）。也就是说**球头模型在深压段高估 3–4 倍**：
+软笔头是尖锋接触，压深越大只是把笔腰压弯，接触面并不按 `sqrt(d)` 扩张。`writing_preview.png` 的粗细是几何上限，
+实际宽度基本由笔锋决定；真要加粗应换笔/加宽 `CharLib` 宽度表并降速让墨渗开，而不是继续加压。
 
 ### 4.3 速度与粗细
 
@@ -186,7 +204,7 @@ run_design('工大',struct('play',true))% 规划+校验+回放，一条命令走
 
 `play_writing` 做的事：`prepare_model(cfg,true)` 打开 `SimMechanicsOpenEditorOnUpdate`，
 把已验证的 `t/q/qd/qdd` 注入模型，按 `p.t(end)` 设 StopTime 后 `sim`。
-仿真比实时快（约 5 s 跑完 32 s 轨迹），跑完后在 Mechanics Explorer 里按 **▶** 可 1 倍速重播，
+仿真比实时快（约 5 s 跑完 36 s 轨迹），跑完后在 Mechanics Explorer 里按 **▶** 可 1 倍速重播，
 时间轴能拖拽、可调速。
 
 两个注意点：
@@ -226,12 +244,12 @@ run_design('工大',struct('play',true))% 规划+校验+回放，一条命令走
 | `accDraw_mm_s2` / `accMove_mm_s2` | 400 / 600 mm/s² | 绘制段 / 空行程加速度 |
 | `cell_mm`, `cellGap_mm` | 80, 20 mm | 字格边长与字距，"工大"总宽 180 mm |
 | `Ts_s` | 0.001 s | 采样周期（点位文件的时间粒度） |
-| `q0_deg` | `[8.000 11.410 113.135 -0.634 54.693 199.099]°` | 起始位形（＝触纸位形），同时决定笔尖起始位置。必须与回放前机器人的实际位形一致，否则控制器报 “joint distance ... too far away” |
-| `qdMax_rad_s`, `qddMax_rad_s2` | π/3（60 °/s）, π（180 °/s²） | 预检用的关节速度/加速度护栏。**为自定值，非厂家额定值**；实测书写 10.7 °/s、143.7 °/s²，约 5.6×/1.25× 余量。查到手册后建议取额定值的 60%~70% |
+| `q0_deg` | `[8.000 11.410 113.135 -0.634 54.693 199.099]°` | **备选**：仅在 `qTouch_deg=[]` 时直接作为起始位形。正常情况下起始位形由 `qTouch_deg` 反解到待机高度，无需手填 |
+| `qdMax_rad_s`, `qddMax_rad_s2` | π/3（60 °/s）, π（180 °/s²） | 预检用的关节速度/加速度护栏。**为自定值，非厂家额定值**；实测书写 11.1 °/s、144.2 °/s²，约 5.4×/1.25× 余量。查到手册后建议取额定值的 60%~70% |
 | `posTol_mm`, `oriTol_deg`, `pathTol_mm` | 0.01, 0.001, 0.01 | 仿真校验阈值（一般不动） |
 
-单位换算与纸面反推集中在 `Matlab/NormalizeConfig.m`（`run_design`/`simulate_design` 开头调用），
-`BrushConfig.m` 本身保持"纯参数表"。运行时会打印两行供现场核对：
+单位换算在 `Matlab/NormalizeConfig.m`（`run_design`/`simulate_design` 开头调用）；纸面中心、书写姿态、待机起始位形
+由 `run_design` 用 `qTouch_deg` 的 FK 一次反推（见 §4.1），`BrushConfig.m` 本身保持"纯参数表"。运行时会打印两行供现场核对：
 
 ```text
 示教触纸姿态：法兰 (456.4, 63.4, 592.9) mm，笔杆偏离竖直 0.92 deg
@@ -251,26 +269,30 @@ run_design('工大',struct('play',true))% 规划+校验+回放，一条命令走
 | `writing_preview.png` | 墨迹预览 |
 | `writing_path.png` | 六联图：俯视/3D/关节角/关节速度/关节加速度/提按与速度 |
 | `design_summary.json` | 参数、笔尖范围、误差指标、文件索引 |
+| `实际书写结果.jpg` | 上机实拍（2026-11-23 存档，非程序生成） |
 | `model_workspace.mat` | `t,q,qd,qdd`，供模型 InitFcn 加载 |
 | `HL0905_2_writing.slx` | 修补后的模型，InitFcn 已指向 `model_workspace.mat` |
 | `design.log` | 运行日志（追加写；可随时清空，不影响产物） |
 
-## 7. 上机流程
+## 7. 上机流程（2026-11-23 已实跑通过）
 
 **只需改 `BrushConfig.m` 里的两个数**（都按示教器/尺子读数，见 §5）：
 
 ```matlab
-cfg.flangeContact_mm=[602 15 638];   % 笔尖接触纸面中心时的法兰中心（示教器读数，mm）
-cfg.brushLength_mm=125;              % 法兰中心到笔尖的距离（尺子量，mm）
+cfg.qTouch_deg=[8.000 11.410 113.135 -0.634 54.693 199.099];  % 笔尖刚触纸时的六个关节角（deg）
+cfg.brushLength_mm=220;                                       % 法兰中心到笔尖（尺子量，mm）
 ```
 
-1. **对刀（必做）**：笔尖轻触纸面 → 抄下**六个关节角** → `qTouch_deg`（起始位形会由它自动反解到待机高度，无需手填 `q0_deg`）；
+0. **先把机器人 jog 到程序打印的「待机起始位形」**（当前 `[8.000 9.192 111.293 -0.605 58.753 199.046]°`，笔尖在纸面中心正上方 30 mm）。
+   首行、末行都是这个位形；现场位形不一致控制器会报 "The joint distance of Current location and PPB start location are too far away"。
+
+1. **对刀（必做）**：笔尖轻触纸面 → 抄下**六个关节角** → `qTouch_deg`（姿态、纸面中心、待机起始位形全由它自动反解，无需手填 `q0_deg`/`paperZ`）；
    量法兰到笔尖距离 → `brushLength_mm`。只能读到法兰坐标时退回填 `flangeContact_mm`。纸面高度差 1 mm 就会压不实或戳纸。
-2. **空跑**：`lift_mm` 加大了跑一遍（或把 `flangeContact_mm` 的 z 抬高 20 mm），确认轨迹无碰撞、无奇异。
-3. **慢速试写**：`speedDraw_mm_s` 降到 10、`maxPress_mm` 降到 1.0，试写单笔，看墨迹宽度。
+2. **空跑**：把 `standby_mm` 临时加到 60 跑一遍，确认轨迹无碰撞、无奇异。
+3. **慢速试写**：`speedDraw_mm_s` 降到 10、`pressOffset_mm` 降到 2，试写单笔，看墨迹宽度。
 4. **正式书写**：恢复参数跑 `run_design('工大')`，按控制器要求加载 `output/writing_joint.txt`
-   （6 列 deg，逐点位置指令；若控制器要求速度，用 `writing_timeline.csv`）。
-5. **收尾**：提笔离开纸面、清洁笔尖；把 `design_summary.json` 与墨迹照片存档，供汇报使用。
+   （6 列 deg，逐点位置指令；若控制器要求速度，用 `writing_timeline.csv`）。跑完自动抬回待机位。
+5. **收尾**：提笔离开纸面、清洁笔尖；把 `design_summary.json` 与实拍照片（如 `output/实际书写结果.jpg`）存档，供汇报使用。
 
 > 安全：首次上机务必把示教器速度倍率降到 10 %，手放急停；笔尖接触纸面前不要开启连续执行。
 
@@ -288,6 +310,16 @@ cfg.brushLength_mm=125;              % 法兰中心到笔尖的距离（尺子�
 另有一条几何标定断言（`run_exp4` 遗留）：POE 与模型探针 `output/probes.mat` 的最大偏差 < 1e-8
 （当前 8.55e-15）。**换机器人/改模型后必须重新标定**，方法见 `docs/实验四指导书.pdf` §3。
 
+### 上机实测（2026-11-23）
+
+| 项目 | 结果 |
+| --- | --- |
+| 轨迹 | 36163 点 / 36.16 s；首行 = 末行 = 待机位形，可连续回放 |
+| 待机位 | 笔尖在纸面中心正上方 30 mm，`[8.000 9.192 111.293 -0.605 58.753 199.046]°` |
+| 压深 | 提按 0–1.32 mm + `pressOffset_mm` 4 mm → 最大 5.32 mm |
+| 实测墨宽 | 竖笔 2.8 mm、横笔 3.3 mm（模型预测 8.9–13 mm，见 §4.2 实测修正） |
+| 结果 | [`output/实际书写结果.jpg`](output/实际书写结果.jpg)：字形"工大"完整、笔画无断裂、提按可见；"工"左上与"大"右横起笔处有轻微积墨点（落笔停顿所致） |
+
 ## 9. 扩展与已知限制
 
 ### 新增字形
@@ -304,7 +336,8 @@ cfg.brushLength_mm=125;              % 法兰中心到笔尖的距离（尺子�
 - 只在**平面**上书写（纸面水平）；无曲面/自适应高度
 - 只有开环位置控制，**无力控/接触力反馈**，纸面不平靠 `maxPress` 留余量
 - 字库仅 `工`、`大`，笔画是单线 + 宽度曲线，不是真正的楷书轮廓填充
-- 未考虑墨水扩散、笔毛分叉、纸张吸墨等物理过程
+- 未考虑墨水扩散、笔毛分叉、纸张吸墨等物理过程；起笔/收笔有轻微积墨点（落笔停顿处）
+- **球头接触模型在深压段高估 3–4 倍**（实测墨宽 ~3 mm vs 模型 9–13 mm）：软笔头是尖锋接触，压深主要压弯笔腰，不按 `sqrt(d)` 扩张；预览图的粗细只能当上限看，见 §4.2
 - 实体回放（`play_writing`）依赖 MATLAB 桌面；`-batch` 下只做数值校验，不弹 Mechanics Explorer
 - `output/HL0905_2_writing.slx` 是构建产物：每次 `run_design` 都从
   `Matlab/HL-0905/HL0905_2.slx` 重新生成，不要手工改它
