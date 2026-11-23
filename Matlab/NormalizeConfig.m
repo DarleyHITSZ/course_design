@@ -10,6 +10,8 @@ if isfield(cfg,'normalized')&&cfg.normalized, return; end
 cfg.brushLength = cfg.brushLength_mm/1000;
 cfg.brushRadius = cfg.brushRadius_mm/1000;
 cfg.maxPress    = cfg.maxPress_mm/1000;
+cfg.standby     = cfg.standby_mm/1000;
+cfg.pressOffset = cfg.pressOffset_mm/1000;
 cfg.lift        = cfg.lift_mm/1000;
 cfg.speedDraw   = cfg.speedDraw_mm_s/1000;
 cfg.speedPress  = cfg.speedPress_mm_s/1000;

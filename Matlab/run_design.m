@@ -26,6 +26,21 @@ else
  cfg=NormalizeConfig(BrushConfig());
 end
 c=HL0905Config();root=cfg.root;
+% 若给了示教触纸关节角，用 FK 反推书写姿态与纸面中心：比手填 yaw/tilt 更准，
+% 且保证起始位形＝上机时的实际位形（否则控制器会报起点太远）。
+if isfield(cfg,'qTouch_deg')&&~isempty(cfg.qTouch_deg)
+ qt=cfg.qTouch_deg(:)*pi/180; Tt=Fkine(c.Xi,qt,c.g0);
+ cfg.Rtool=Tt(1:3,1:3);
+ cfg.paper_mm=(1000*Tt(1:3,4))'+cfg.brushLength_mm*cfg.Rtool(:,3)';
+ cfg.paperX=cfg.paper_mm(1)/1000;cfg.paperY=cfg.paper_mm(2)/1000;cfg.paperZ=cfg.paper_mm(3)/1000;
+ fprintf('示教触纸姿态：法兰 (%.1f, %.1f, %.1f) mm，笔杆偏离竖直 %.2f deg\n', ...
+         1000*Tt(1:3,4),acosd(max(-1,min(1,-cfg.Rtool(3,3)))));
+ % 待机位：纸面中心正上方 standby_mm；起始位形由 IK 反解，保证文件首行=现场可停到的位形
+ cfg.standbyTip=[cfg.paperX cfg.paperY cfg.paperZ+cfg.standby];
+ Tb=eye(4);Tb(1:3,1:3)=cfg.Rtool;Tb(1:3,4)=cfg.standbyTip(:)-cfg.brushLength*cfg.Rtool(:,3);
+ c.seed=qt; qq=Ikine6s(Tb,c); cfg.q0=qq(:)';
+ fprintf('待机起始位形 (deg): [%.3f %.3f %.3f %.3f %.3f %.3f]\n',cfg.q0*180/pi);
+end
 out=fullfile(root,'output');if ~isfolder(out),mkdir(out);end
 diary(fullfile(out,'design.log'));cleanup=onCleanup(@()diary('off'));%#ok<NASGU>
 fprintf('\n==== 机械臂毛笔书写：%s ====\n',chars);

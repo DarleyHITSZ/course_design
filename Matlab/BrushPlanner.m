@@ -16,14 +16,17 @@ for k=1:numel(strokes)
  st=strokes(k);
  u=st.uv(:,1)+off(st.charIndex);
  dep=min(cfg.maxPress,st.w.^2/(8*cfg.brushRadius));
- P=[cfg.paperX+u, cfg.paperY+st.uv(:,2), cfg.paperZ-dep];
+ P=[cfg.paperX+u, cfg.paperY+st.uv(:,2), cfg.paperZ-cfg.pressOffset-dep]; % 整体压深叠加在提按深度上
  A=[P(1,1) P(1,2) cfg.paperZ+cfg.lift];
 
- if first   % 起始点先竖直抬到安全高度
-  U=[cur(1:2) cfg.paperZ+cfg.lift];
-  [q,sv]=samplePath([cur;U],cfg.speedPress,cfg.accDraw,cfg.Ts);
-  [tip,spd,segName,strokeName,ci]=appendSeg(tip,spd,segName,strokeName,ci,q,sv,'抬笔','',0);
-  cur=U; first=false;
+ if first   % 起始点先竖直抬到安全高度（已在待机高度之上则跳过）
+  U=[cur(1:2) max(cur(3),cfg.paperZ+cfg.lift)];
+  if norm(U-cur)>1e-9
+   [q,sv]=samplePath([cur;U],cfg.speedPress,cfg.accDraw,cfg.Ts);
+   [tip,spd,segName,strokeName,ci]=appendSeg(tip,spd,segName,strokeName,ci,q,sv,'抬笔','',0);
+   cur=U;
+  end
+  first=false;
  end
 
  if norm(A-cur)>1e-9   % 空行程
@@ -41,6 +44,15 @@ for k=1:numel(strokes)
  cur=[P(end,1) P(end,2) cfg.paperZ+cfg.lift];
  [q,sv]=samplePath([P(end,:);cur],cfg.speedPress,cfg.accDraw,cfg.Ts);  % 提笔
  [tip,spd,segName,strokeName,ci]=appendSeg(tip,spd,segName,strokeName,ci,q,sv,'提笔',st.name,st.charIndex);
+end
+
+% 收笔后回到待机位（纸面中心正上方 standby）：首尾位形一致，控制器可连续回放
+if isfield(cfg,'standby')&&cfg.standby>0
+ S=[cfg.paperX cfg.paperY cfg.paperZ+cfg.standby];
+ if norm(S-cur)>1e-9
+  [q,sv]=samplePath([cur;S],cfg.speedMove,cfg.accMove,cfg.Ts);
+  [tip,spd,segName,strokeName,ci]=appendSeg(tip,spd,segName,strokeName,ci,q,sv,'回待机','',0);
+ end
 end
 
 plan.tip=tip;
